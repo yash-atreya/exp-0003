@@ -167,10 +167,10 @@ app.post('/workflow/:address', async (context) => {
   //   return context.json({ error: 'Key expired and deleted' }, 400)
   // }
 
-  let keyPair: KeyPair = {
+  const keyPair: KeyPair = {
     ...serverKeyPair,
     address,
-  };
+  }
   const instance = await env.EXP3_WORKFLOW.create({
     id: crypto.randomUUID(),
     params: {
