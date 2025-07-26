@@ -62,20 +62,27 @@ export class Exp3Workflow extends WorkflowEntrypoint<Cloudflare.Env, Params> {
 
             const porto = getPorto()
 
-            const prepareResult = await porto.provider.request({
-              method: 'wallet_prepareCalls',
-              params: [
-                {
-                  key: {
-                    type: keyPair.type,
-                    publicKey: keyPair.public_key,
+            let prepareResult: any
+
+            try {
+              prepareResult = await porto.provider.request({
+                method: 'wallet_prepareCalls',
+                params: [
+                  {
+                    key: {
+                      type: keyPair.type,
+                      publicKey: keyPair.public_key,
+                    },
+                    from: address,
+                    calls: Json.parse(calls),
+                    chainId: Hex.fromNumber(Chains.baseSepolia.id),
                   },
-                  from: address,
-                  calls: Json.parse(calls),
-                  chainId: Hex.fromNumber(Chains.baseSepolia.id),
-                },
-              ],
-            })
+                ],
+              })
+            } catch (error) {
+              console.error(`Failed to prepare calls for ${address}:`, error)
+              throw new NonRetryableError('failed to prepare calls')
+            }
 
             const { digest, ...request } = prepareResult
 

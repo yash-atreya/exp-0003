@@ -10,7 +10,7 @@ import * as React from 'react'
 import { parseEther } from 'viem'
 import { Hooks } from 'porto/wagmi'
 import { useConnect } from 'porto/wagmi/Hooks'
-import { type Errors, type Hex, Json } from 'ox'
+import { type Errors, Hex, Json } from 'ox'
 import { useMutation } from '@tanstack/react-query'
 
 import {
@@ -22,7 +22,8 @@ import {
 import { exp1Config } from '#contracts.ts'
 import { porto, wagmiConfig } from '#config.ts'
 import { StringFormatter } from '#utilities.ts'
-import { SERVER_URL, permissions } from '#constants.ts'
+import { SERVER_URL, permissions, publicClient } from '#constants.ts'
+import { ServerActions } from 'porto'
 
 export function App() {
   useNukeEverything()
@@ -41,6 +42,12 @@ export function App() {
         </summary>
         <Events />
       </details>
+      <details>
+        <summary style={{ fontSize: '1.25rem', marginTop: '1rem' }}>
+          Keys
+        </summary>
+        <GetKeys />
+      </details>
       <hr />
       <Connect />
       <hr />
@@ -49,6 +56,8 @@ export function App() {
       <GrantPermissions />
       <hr />
       <Fund />
+      <hr />
+      <NoOp />
       <hr />
       <DemoScheduler />
     </main>
@@ -658,7 +667,6 @@ function State() {
     // @ts-ignore
     () => porto._internal.store.getState(),
   )
-
   return (
     <div>
       <h3>State</h3>
@@ -711,6 +719,128 @@ function Events() {
     <div>
       <h3>Events</h3>
       <pre>{Json.stringify(responses, null, 2)}</pre>
+    </div>
+  )
+}
+
+function GetKeys() {
+  const { address } = useAccount()
+
+  const [keys, setKeys] = React.useState<any[]>()
+
+  React.useEffect(() => {
+    const fetchKeys = async () => {
+      if (!address) return
+
+      const keys = await ServerActions.getKeys(publicClient, {
+        account: address,
+      })
+
+      const session_keys = keys.filter((key) => key.role !== 'admin')
+
+      console.log('Session Keys:', session_keys)
+
+      // Map the permissions.spend.limit BigInt to Hex
+      const converted_keys = session_keys.map((key) => ({
+        ...key,
+        permissions: {
+          ...key.permissions,
+          spend: key.permissions?.spend?.map((spend) => ({
+            ...spend,
+            limit: Hex.fromNumber(spend.limit),
+          })),
+        },
+      }))
+      setKeys(converted_keys)
+    }
+
+    fetchKeys().catch((error) => {
+      console.error('Error fetching keys:', error)
+    })
+  }, [address])
+
+  return (
+    <div>
+      <h3>wallet_getKeys</h3>
+      <pre>{JSON.stringify(keys, null, 2)}</pre>
+    </div>
+  )
+}
+
+interface CallsStatus {
+  statusCode: number
+}
+function NoOp() {
+  const { address, chain } = useAccount()
+  const sendCalls = useSendCalls()
+
+  const explorerUrl = chain?.blockExplorers?.default?.url
+  const transactionLink = (hash: string) =>
+    explorerUrl ? `${explorerUrl}/tx/${hash}` : hash
+
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    data: callsStatus,
+  } = useWaitForCallsStatus({
+    id: sendCalls.data?.id,
+  })
+
+  if (callsStatus?.statusCode !== 200) {
+    console.error(`Error: ${callsStatus?.statusCode}`, callsStatus?.status)
+  }
+
+  if (callsStatus?.statusCode === 200) {
+    console.info(`BundleID: ${sendCalls.data?.id}`)
+    console.info(
+      `TxLink: ${transactionLink(callsStatus?.receipts?.at(0)?.transactionHash as `0x${string}`)}`,
+    )
+    console.info('Success Status:', callsStatus)
+  }
+
+  return (
+    <div>
+      <h3>[client] Register Key using PreCalls</h3>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          sendCalls.sendCalls({
+            calls: [
+              {
+                to: '0x0000000000000000000000000000000000000000',
+                value: 0n,
+              },
+            ],
+          })
+        }}
+      >
+        <button type="submit" disabled={sendCalls.status === 'pending'}>
+          {sendCalls.status === 'pending' ? 'Executing...' : 'Send No-op'}
+        </button>
+      </form>
+      <ul style={{ listStyleType: 'none', padding: 0 }}>
+        {sendCalls.data?.id && (
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href={transactionLink(sendCalls.data!.id)}
+          >
+            {StringFormatter.truncateHexString({
+              address: sendCalls.data!.id,
+              length: 12,
+            })}
+          </a>
+        )}
+      </ul>
+      <p>{isConfirming && 'Waiting for confirmation...'}</p>
+      <p>{isConfirmed && 'Transaction confirmed.'}</p>
+      {sendCalls.error && (
+        <div>
+          Error:{' '}
+          {(sendCalls.error as Errors.BaseError).shortMessage ||
+            sendCalls.error.message}
+        </div>
+      )}
     </div>
   )
 }
