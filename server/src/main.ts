@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import crypto from 'node:crypto'
-import { Address, Json } from 'ox'
+import { Address, Json, type Hex } from 'ox'
 import { logger } from 'hono/logger'
 import { env } from 'cloudflare:workers'
 import { requestId } from 'hono/request-id'
@@ -10,11 +10,12 @@ import { HTTPException } from 'hono/http-exception'
 import { getConnInfo } from 'hono/cloudflare-workers'
 
 import { debugApp } from '#debug.ts'
-import type { Env } from '#types.ts'
+import type { Env, KeyPair } from '#types.ts'
 import { ServerKeyPair } from '#keys.ts'
 import wranglerJSON from '#wrangler.json'
 import { Exp3Workflow } from '#workflow.ts'
 import { actions, buildActionCall } from '#calls.ts'
+import { SERVER_KEY, serverKeyPair } from '#config.ts'
 
 const app = new Hono<{ Bindings: Env }>()
 
@@ -101,23 +102,23 @@ app.post('/schedule', async (context) => {
     throw new HTTPException(400, { message: 'Invalid action' })
   }
 
-  const storedKey = await ServerKeyPair.getFromStore({
-    address: account,
-  })
+  // const storedKey = await ServerKeyPair.getFromStore({
+  //   address: account,
+  // })
 
-  if (!storedKey) {
-    throw new HTTPException(400, {
-      message:
-        'Key not found. Request a new key and grant permissions if the problem persists',
-    })
-  }
+  // if (!storedKey) {
+  //   throw new HTTPException(400, {
+  //     message:
+  //       'Key not found. Request a new key and grant permissions if the problem persists',
+  //   })
+  // }
 
-  if (storedKey?.expiry && storedKey?.expiry < Math.floor(Date.now() / 1_000)) {
-    await ServerKeyPair.deleteFromStore({
-      address: account.toLowerCase(),
-    })
-    throw new HTTPException(400, { message: 'Key expired and deleted' })
-  }
+  // if (storedKey?.expiry && storedKey?.expiry < Math.floor(Date.now() / 1_000)) {
+  //   await ServerKeyPair.deleteFromStore({
+  //     address: account.toLowerCase(),
+  //   })
+  //   throw new HTTPException(400, { message: 'Key expired and deleted' })
+  // }
 
   const calls = buildActionCall({ action, account })
 
@@ -157,15 +158,19 @@ app.post('/workflow/:address', async (context) => {
     })
   }
 
-  const keyPair = await ServerKeyPair.getFromStore({ address })
+  // const keyPair = await ServerKeyPair.getFromStore({ address })
 
-  if (!keyPair) return context.json({ error: 'Key not found' }, 404)
+  // if (!keyPair) return context.json({ error: 'Key not found' }, 404)
 
-  if (keyPair.expiry && keyPair.expiry < Math.floor(Date.now() / 1_000)) {
-    await ServerKeyPair.deleteFromStore({ address })
-    return context.json({ error: 'Key expired and deleted' }, 400)
-  }
+  // if (keyPair.expiry && keyPair.expiry < Math.floor(Date.now() / 1_000)) {
+  //   await ServerKeyPair.deleteFromStore({ address })
+  //   return context.json({ error: 'Key expired and deleted' }, 400)
+  // }
 
+  let keyPair: KeyPair = {
+    ...serverKeyPair,
+    address,
+  };
   const instance = await env.EXP3_WORKFLOW.create({
     id: crypto.randomUUID(),
     params: {

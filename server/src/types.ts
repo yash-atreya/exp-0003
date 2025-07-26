@@ -32,11 +32,11 @@ export type Schedule = Pretty<
 
 export type KeyPair = Pretty<
   BaseAttributes & {
-    address: string
+    address: string | null,
     public_key: Hex.Hex
     private_key: Hex.Hex
     expiry: number
-    type: 'p256'
+    type: string,
     role: 'session' | 'admin'
   }
 >

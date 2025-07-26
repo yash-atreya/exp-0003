@@ -51,8 +51,6 @@ export function App() {
       <hr />
       <Connect />
       <hr />
-      <RequestKey />
-      <hr />
       <GrantPermissions />
       <hr />
       <Fund />
@@ -86,7 +84,7 @@ function DebugLink() {
         flexDirection: 'column',
       }}
     >
-      <a
+      {/* <a
         target="_blank"
         rel="noreferrer"
         href={`${SERVER_URL}/debug?${searchParams.toString()}`}
@@ -103,7 +101,7 @@ function DebugLink() {
         }}
       >
         DEBUG
-      </a>
+      </a> */}
       <button
         hidden={!import.meta.env.DEV}
         disabled={!import.meta.env.DEV}
@@ -442,7 +440,6 @@ function Fund() {
 function DemoScheduler() {
   const balance = useBalance()
   const { address } = useAccount()
-  const { data: debugData } = useDebug({ address, enabled: !!address })
 
   const scheduleTransactionMutation = useMutation({
     mutationFn: async ({
@@ -502,9 +499,9 @@ function DemoScheduler() {
     <div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <h3>[server] Schedule Transactions</h3>
-        <p style={{ marginLeft: '6px' }}>
+        {/* <p style={{ marginLeft: '6px' }}>
           | active schedules: {debugData?.schedules?.length || 0} |
-        </p>
+        </p> */}
         {startWorkflowMutation.status !== 'idle' && (
           <span
             style={{
@@ -590,7 +587,7 @@ function DemoScheduler() {
           Try again in a few seconds
         </pre>
       )}
-      <ul style={{ paddingLeft: 10 }}>
+      {/* <ul style={{ paddingLeft: 10 }}>
         {debugData
           ? debugData?.transactions?.toReversed()?.map((transaction) => {
               return (
@@ -609,7 +606,7 @@ function DemoScheduler() {
               )
             })
           : null}
-      </ul>
+      </ul> */}
     </div>
   )
 }

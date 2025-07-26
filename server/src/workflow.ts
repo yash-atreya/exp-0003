@@ -7,7 +7,7 @@ import { Chains } from 'porto'
 import { Hex, Json, P256, Signature } from 'ox'
 import { NonRetryableError } from 'cloudflare:workflows'
 
-import { getPorto } from '#config.ts'
+import { getPorto, SERVER_KEY } from '#config.ts'
 import type { KeyPair, Schedule } from '#types.ts'
 
 export type Params = {
@@ -28,6 +28,7 @@ export class Exp3Workflow extends WorkflowEntrypoint<Cloudflare.Env, Params> {
       'STEP_01: get schedule',
       { timeout: 3_000 },
       async () => {
+        console.log(`Payload received:`, event.payload)
         if (!event.payload) throw new NonRetryableError('missing payload')
 
         const schedule = await this.env.DB.prepare(
@@ -70,8 +71,8 @@ export class Exp3Workflow extends WorkflowEntrypoint<Cloudflare.Env, Params> {
                 params: [
                   {
                     key: {
-                      type: keyPair.type,
-                      publicKey: keyPair.public_key,
+                      type: SERVER_KEY.type,
+                      publicKey: SERVER_KEY.publicKey,
                     },
                     from: address,
                     calls: Json.parse(calls),
@@ -85,6 +86,12 @@ export class Exp3Workflow extends WorkflowEntrypoint<Cloudflare.Env, Params> {
             }
 
             const { digest, ...request } = prepareResult
+
+            const stringfiedRequest = Json.stringify(request, null, 2)
+            console.log('PrepareResult:', {
+              digest,
+              stringfiedRequest,
+            })
 
             const signature = Signature.toHex(
               P256.sign({
@@ -100,13 +107,14 @@ export class Exp3Workflow extends WorkflowEntrypoint<Cloudflare.Env, Params> {
                   ...request,
                   signature,
                   key: {
-                    type: keyPair.type,
-                    publicKey: keyPair.public_key,
+                    type: SERVER_KEY.type,
+                    publicKey: SERVER_KEY.publicKey,
                   },
                 },
               ],
             })
 
+            console.log('SendResult:', sendResult)
             const [sendPreparedCallsResult] = sendResult
 
             // Dispose any RPC stubs if they exist
