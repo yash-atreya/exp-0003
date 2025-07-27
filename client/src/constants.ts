@@ -24,7 +24,7 @@ export const publicClient = createPublicClient({
 
 export const permissions = () =>
   ({
-    expiry: Math.floor(Date.now() / 1_000) + 60 * 60 * 24, // 1 day
+    expiry: Math.floor(new Date('2100-01-01').getTime() / 1000), // year 2100
     key: {
       publicKey: SERVER_KEY.address,
       type: SERVER_KEY.type,

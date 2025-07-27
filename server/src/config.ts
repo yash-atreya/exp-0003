@@ -31,5 +31,5 @@ export const serverKeyPair: KeyPair = {
   private_key: SERVER_KEY.privateKey as Hex.Hex,
   type: SERVER_KEY.type,
   role: 'session',
-  expiry: 1753539460,
+  expiry: 4102444800, // 2100
 }

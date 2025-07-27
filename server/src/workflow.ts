@@ -4,7 +4,7 @@ import {
   type WorkflowEvent,
 } from 'cloudflare:workers'
 import { Chains } from 'porto'
-import { Hex, Json, P256, Signature } from 'ox'
+import { Hex, Json, P256, Secp256k1, Signature } from 'ox'
 import { NonRetryableError } from 'cloudflare:workflows'
 
 import { getPorto, SERVER_KEY } from '#config.ts'
@@ -94,7 +94,7 @@ export class Exp3Workflow extends WorkflowEntrypoint<Cloudflare.Env, Params> {
             })
 
             const signature = Signature.toHex(
-              P256.sign({
+              Secp256k1.sign({
                 payload: digest,
                 privateKey: keyPair.private_key,
               }),
