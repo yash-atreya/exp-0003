@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { queryClient } from './config.ts'
 import { SERVER_URL } from './constants.ts'
-import { exp1Config } from './contracts.ts'
+import { usdcConfig } from './contracts.ts'
 import { useQuery } from '@tanstack/react-query'
 import { Address, type Hex, Json, Value } from 'ox'
 import { useAccount, useReadContract } from 'wagmi'
@@ -10,13 +10,13 @@ export function useBalance() {
   const { address } = useAccount()
   const { data: balance } = useReadContract({
     args: [address!],
-    abi: exp1Config.abi,
+    abi: usdcConfig.abi,
     functionName: 'balanceOf',
-    address: exp1Config.address,
+    address: usdcConfig.address,
     query: { enabled: !!address, refetchInterval: 2_000 },
   })
 
-  return Number(Value.format(balance ?? 0n, 18))
+  return Number(Value.format(balance ?? 0n, usdcConfig.decimals))
 }
 
 export interface DebugData {

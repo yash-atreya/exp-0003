@@ -1,7 +1,7 @@
 import { Value } from 'ox'
 
-import { exp1Config } from '#contracts.ts'
-import { createPublicClient, http } from 'viem'
+import { usdcConfig } from '#contracts.ts'
+import { createPublicClient, http, parseUnits } from 'viem'
 import { baseSepolia } from 'viem/chains'
 
 export const SERVER_URL =
@@ -33,22 +33,18 @@ export const permissions = () =>
       calls: [
         {
           signature: 'approve(address,uint256)',
-          to: exp1Config.address,
+          to: usdcConfig.address,
         },
         {
           signature: 'transfer(address,uint256)',
-          to: exp1Config.address,
-        },
-        {
-          signature: 'mint()',
-          to: exp1Config.address,
+          to: usdcConfig.address,
         },
       ],
       spend: [
         {
-          period: 'minute',
-          limit: Value.fromEther('1000'),
-          token: exp1Config.address,
+          period: 'day',
+          limit: parseUnits('50000', usdcConfig.decimals), // 50000 USDC
+          token: usdcConfig.address,
         },
       ],
     },

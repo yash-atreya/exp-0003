@@ -51,12 +51,12 @@ export function App() {
       <hr />
       <Connect />
       <hr />
-      <GrantPermissions />
+      {/* <GrantPermissions />
       <hr />
       <Fund />
       <hr />
       <NoOp />
-      <hr />
+      <hr /> */}
       <DemoScheduler />
     </main>
   )
@@ -229,7 +229,7 @@ function Connect() {
       <p>{connect.error?.message}</p>
       {address && <p>Account: {address}</p>}
 
-      <p>Balance: {`${Number(balance).toFixed(2)} EXP`}</p>
+      <p>Balance: {`${Number(balance).toFixed(2)} USDC`}</p>
 
       {address && latestPermissions && (
         <details
@@ -535,7 +535,7 @@ function DemoScheduler() {
           scheduleTransactionMutation.mutate({ action, schedule, count })
         }}
       >
-        <p>Approve & Transfer 1 EXP</p>
+        <p>Approve & Transfer 1 USDC</p>
         <p>once every 10 seconds</p>
         <div
           style={{
@@ -561,7 +561,7 @@ function DemoScheduler() {
           <button
             type="submit"
             title={
-              balance < 25
+              balance < 5
                 ? 'Insufficient balance'
                 : scheduleTransactionMutation.status !== 'idle'
                   ? 'Already submitting'
@@ -570,7 +570,7 @@ function DemoScheduler() {
             disabled={
               isPending ||
               scheduleTransactionMutation.status !== 'idle' ||
-              balance < 25
+              balance < 5
             }
             style={{ width: '75px', textAlign: 'center' }}
           >

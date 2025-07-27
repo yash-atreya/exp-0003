@@ -4,7 +4,7 @@ import { Dialog, Mode, Porto } from 'porto'
 import { porto as portoConnector } from 'porto/wagmi'
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 
-export const porto = Porto.create()
+export const porto = Porto.create( { feeToken: 'USDC' })
 
 const renderer =
   import.meta.env.VITE_DIALOG_RENDERER === 'popup'

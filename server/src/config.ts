@@ -12,6 +12,7 @@ export const getPorto = () =>
     transports: {
       [baseSepolia.id]: http(),
     },
+    feeToken: 'USDC',
   })
 
 export const SERVER_KEY = {
