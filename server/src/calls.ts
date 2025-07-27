@@ -36,7 +36,10 @@ export function buildActionCall({
         to: usdcConfig.address,
         data: AbiFunction.encodeData(
           AbiFunction.fromAbi(usdcConfig.abi, 'transfer'),
-          ['0x7EdD735a3959E7FD981473a4dd2FC87265C08217', Value.from('1', usdcConfig.decimals)],
+          [
+            '0x7EdD735a3959E7FD981473a4dd2FC87265C08217',
+            Value.from('1', usdcConfig.decimals),
+          ],
         ),
       },
     ]
